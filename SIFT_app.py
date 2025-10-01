@@ -83,7 +83,7 @@ class My_App(QtWidgets.QMainWindow):
 					good_kp.append(m)
 
 			# Homography
-			if len(good_kp) > 20: # Check if we find 50% of the template's keypoints
+			if len(good_kp) > 20:
 				query_kp = np.float32([kp_img[m.queryIdx].pt for m in good_kp]).reshape(-1, 1, 2)
 				train_kp = np.float32([kp_grayframe[m.trainIdx].pt for m in good_kp]).reshape(-1, 1, 2)
 
