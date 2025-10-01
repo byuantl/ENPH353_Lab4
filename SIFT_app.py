@@ -88,7 +88,6 @@ class My_App(QtWidgets.QMainWindow):
 				train_kp = np.float32([kp_grayframe[m.trainIdx].pt for m in good_kp]).reshape(-1, 1, 2)
 
 				matrix, mask = cv2.findHomography(query_kp, train_kp, cv2.RANSAC, 20)
-				matches_mask = mask.ravel().tolist()
 
 				# Perspective transform
 				pts = np.float32([[0, 0], [0, self.template_label_height], [self.template_label_width, self.template_label_height], [self.template_label_width, 0]]).reshape(-1, 1, 2)
