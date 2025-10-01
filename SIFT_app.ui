@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>801</width>
+    <width>900</width>
     <height>600</height>
    </rect>
   </property>
@@ -18,7 +18,7 @@
     <property name="geometry">
      <rect>
       <x>105</x>
-      <y>300</y>
+      <y>500</y>
       <width>130</width>
       <height>23</height>
      </rect>
@@ -37,7 +37,7 @@
     <property name="geometry">
      <rect>
       <x>580</x>
-      <y>300</y>
+      <y>500</y>
       <width>100</width>
       <height>23</height>
      </rect>
@@ -49,27 +49,27 @@
    <widget class="QLabel" name="template_label">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>10</y>
-      <width>320</width>
-      <height>240</height>
+      <x>9</x>
+      <y>9</y>
+      <width>281</width>
+      <height>450</height>
      </rect>
     </property>
     <property name="text">
-     <string>TextLabel</string>
+     <string>Load a template image!</string>
     </property>
    </widget>
    <widget class="QLabel" name="live_image_label">
     <property name="geometry">
      <rect>
-      <x>470</x>
+      <x>290</x>
       <y>10</y>
-      <width>320</width>
-      <height>240</height>
+      <width>600</width>
+      <height>450</height>
      </rect>
     </property>
     <property name="text">
-     <string>TextLabel</string>
+     <string>Enable webcam feed!</string>
     </property>
    </widget>
   </widget>
@@ -78,8 +78,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>801</width>
-     <height>20</height>
+     <width>900</width>
+     <height>22</height>
     </rect>
    </property>
   </widget>

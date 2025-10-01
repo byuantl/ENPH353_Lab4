@@ -4,6 +4,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from python_qt_binding import loadUi
 
 import cv2
+import numpy as np
 import sys
 
 class My_App(QtWidgets.QMainWindow):
@@ -13,16 +14,23 @@ class My_App(QtWidgets.QMainWindow):
 		loadUi("./SIFT_app.ui", self)
 
 		self._cam_id = 0
-		self._cam_fps = 10
+		self._cam_fps = 5
 		self._is_cam_enabled = False
 		self._is_template_loaded = False
+		self.template_path = ""
+
+		self.template_label_width = 280
+		self.template_label_height = 400
+
+		self.live_image_label_width = 600
+		self.live_image_label_height = 450
 
 		self.browse_button.clicked.connect(self.SLOT_browse_button)
 		self.toggle_cam_button.clicked.connect(self.SLOT_toggle_camera)
 
 		self._camera_device = cv2.VideoCapture(self._cam_id)
-		self._camera_device.set(3, 320)
-		self._camera_device.set(4, 240)
+		self._camera_device.set(3, self.live_image_label_width)
+		self._camera_device.set(4, self.live_image_label_height)
 
 		# Timer used to trigger the camera
 		self._timer = QtCore.QTimer(self)
@@ -36,7 +44,9 @@ class My_App(QtWidgets.QMainWindow):
 			self.template_path = dlg.selectedFiles()[0]
 
 		pixmap = QtGui.QPixmap(self.template_path)
-		self.template_label.setPixmap(pixmap)
+		scaled_pixmap = pixmap.scaled(self.template_label_width, self.template_label_height, QtCore.Qt.KeepAspectRatio)
+		self.template_label.setPixmap(scaled_pixmap)
+		self._is_template_loaded = True
 		print("Loaded template image file: " + self.template_path)
 		
 	# Source: stackoverflow.com/questions/34232632/
@@ -50,10 +60,34 @@ class My_App(QtWidgets.QMainWindow):
 
 	def SLOT_query_camera(self):
 		ret, frame = self._camera_device.read()
-		#TODO run SIFT on the captured frame
+		
+		if self._is_template_loaded:
+			img = cv2.imread(self.template_path, cv2.IMREAD_GRAYSCALE)
+			grayframe = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+			# Find features
+			sift = cv2.SIFT_create()
+			kp_img, desc_img = sift.detectAndCompute(img, None)
+			kp_grayframe, desc_grayframe = sift.detectAndCompute(grayframe, None)
+			
+			# Match features
+			index_params = dict(algorithm=0, trees=5)
+			search_params = dict()
+			flann = cv2.FlannBasedMatcher(index_params, search_params)
+			matches = flann.knnMatch(desc_img, desc_grayframe, k=2)
+
+			good_kp = []
+			for m, n in matches:
+				if m.distance < 0.5*n.distance:
+					good_kp.append(m)
+
+			frame = cv2.drawMatches(img, kp_img, grayframe, kp_grayframe, good_kp, grayframe)
+
+
 
 		pixmap = self.convert_cv_to_pixmap(frame)
-		self.live_image_label.setPixmap(pixmap)
+		scaled_pixmap = pixmap.scaled(self.live_image_label_width, self.live_image_label_height, QtCore.Qt.KeepAspectRatio)
+		self.live_image_label.setPixmap(scaled_pixmap)
 
 	def SLOT_toggle_camera(self):
 		if self._is_cam_enabled:
