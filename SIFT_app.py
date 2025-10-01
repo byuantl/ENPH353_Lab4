@@ -79,23 +79,22 @@ class My_App(QtWidgets.QMainWindow):
 
 			good_kp = []
 			for m, n in matches:
-				if m.distance < 0.5*n.distance:
+				if m.distance < 0.6*n.distance:
 					good_kp.append(m)
 
 			# Homography
-			if len(good_kp) > 20:
+			if len(good_kp) > 10:
 				query_kp = np.float32([kp_img[m.queryIdx].pt for m in good_kp]).reshape(-1, 1, 2)
 				train_kp = np.float32([kp_grayframe[m.trainIdx].pt for m in good_kp]).reshape(-1, 1, 2)
 
-				matrix, mask = cv2.findHomography(query_kp, train_kp, cv2.RANSAC, 20)
+				matrix, mask = cv2.findHomography(query_kp, train_kp, cv2.RANSAC, 5.0)
 
 				# Perspective transform
-				pts = np.float32([[0, 0], [0, self.template_label_height], [self.template_label_width, self.template_label_height], [self.template_label_width, 0]]).reshape(-1, 1, 2)
+				height, width = img.shape
+				pts = np.float32([[0, 0], [0, height], [width, height], [width, 0]]).reshape(-1, 1, 2)
 				dst = cv2.perspectiveTransform(pts, matrix)
 
-				homography = cv2.polylines(frame, [np.int32(dst)], True, (255, 0, 0), 3)
-
-				frame = homography
+				frame = cv2.polylines(frame, [np.int32(dst)], True, (255, 0, 0), 3)
 			else:
 				frame = cv2.drawMatches(raw, kp_img, frame, kp_grayframe, good_kp, grayframe)
 
