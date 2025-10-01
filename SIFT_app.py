@@ -62,7 +62,8 @@ class My_App(QtWidgets.QMainWindow):
 		ret, frame = self._camera_device.read()
 		
 		if self._is_template_loaded:
-			img = cv2.imread(self.template_path, cv2.IMREAD_GRAYSCALE)
+			raw = cv2.imread(self.template_path)
+			img = cv2.cvtColor(raw, cv2.COLOR_BGR2GRAY)
 			grayframe = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
 			# Find features
@@ -81,7 +82,11 @@ class My_App(QtWidgets.QMainWindow):
 				if m.distance < 0.5*n.distance:
 					good_kp.append(m)
 
-			frame = cv2.drawMatches(img, kp_img, grayframe, kp_grayframe, good_kp, grayframe)
+			frame = cv2.drawMatches(raw, kp_img, frame, kp_grayframe, good_kp, grayframe)
+
+			# Homography
+			# if (good_kp.len/kp_img) > 0.75: # Check if we find 75% of the template's keypoints
+				# query_kp = np.float32([kp_img[m.queryIdx].pt for m in good_kp])
 
 
 

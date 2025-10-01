@@ -51,12 +51,15 @@
      <rect>
       <x>9</x>
       <y>9</y>
-      <width>281</width>
+      <width>280</width>
       <height>450</height>
      </rect>
     </property>
     <property name="text">
      <string>Load a template image!</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
     </property>
    </widget>
    <widget class="QLabel" name="live_image_label">
@@ -70,6 +73,9 @@
     </property>
     <property name="text">
      <string>Enable webcam feed!</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
     </property>
    </widget>
   </widget>
