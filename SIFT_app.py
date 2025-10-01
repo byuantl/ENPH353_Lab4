@@ -82,13 +82,23 @@ class My_App(QtWidgets.QMainWindow):
 				if m.distance < 0.5*n.distance:
 					good_kp.append(m)
 
-			frame = cv2.drawMatches(raw, kp_img, frame, kp_grayframe, good_kp, grayframe)
-
 			# Homography
-			# if (good_kp.len/kp_img) > 0.75: # Check if we find 75% of the template's keypoints
-				# query_kp = np.float32([kp_img[m.queryIdx].pt for m in good_kp])
+			if len(good_kp) > 20: # Check if we find 50% of the template's keypoints
+				query_kp = np.float32([kp_img[m.queryIdx].pt for m in good_kp]).reshape(-1, 1, 2)
+				train_kp = np.float32([kp_grayframe[m.trainIdx].pt for m in good_kp]).reshape(-1, 1, 2)
 
+				matrix, mask = cv2.findHomography(query_kp, train_kp, cv2.RANSAC, 20)
+				matches_mask = mask.ravel().tolist()
 
+				# Perspective transform
+				pts = np.float32([[0, 0], [0, self.template_label_height], [self.template_label_width, self.template_label_height], [self.template_label_width, 0]]).reshape(-1, 1, 2)
+				dst = cv2.perspectiveTransform(pts, matrix)
+
+				homography = cv2.polylines(frame, [np.int32(dst)], True, (255, 0, 0), 3)
+
+				frame = homography
+			else:
+				frame = cv2.drawMatches(raw, kp_img, frame, kp_grayframe, good_kp, grayframe)
 
 		pixmap = self.convert_cv_to_pixmap(frame)
 		scaled_pixmap = pixmap.scaled(self.live_image_label_width, self.live_image_label_height, QtCore.Qt.KeepAspectRatio)
