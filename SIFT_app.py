@@ -14,7 +14,7 @@ class My_App(QtWidgets.QMainWindow):
 		loadUi("./SIFT_app.ui", self)
 
 		self._cam_id = 0
-		self._cam_fps = 5
+		self._cam_fps = 10
 		self._is_cam_enabled = False
 		self._is_template_loaded = False
 		self.template_path = ""
@@ -36,6 +36,8 @@ class My_App(QtWidgets.QMainWindow):
 		self._timer = QtCore.QTimer(self)
 		self._timer.timeout.connect(self.SLOT_query_camera)
 		self._timer.setInterval(1000 / self._cam_fps)
+
+		self.sift = cv2.SIFT_create()
 	
 	def SLOT_browse_button(self):
 		dlg = QtWidgets.QFileDialog()
@@ -67,9 +69,8 @@ class My_App(QtWidgets.QMainWindow):
 			grayframe = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
 			# Find features
-			sift = cv2.SIFT_create()
-			kp_img, desc_img = sift.detectAndCompute(img, None)
-			kp_grayframe, desc_grayframe = sift.detectAndCompute(grayframe, None)
+			kp_img, desc_img = self.sift.detectAndCompute(img, None)
+			kp_grayframe, desc_grayframe = self.sift.detectAndCompute(grayframe, None)
 			
 			# Match features
 			index_params = dict(algorithm=0, trees=5)
@@ -77,6 +78,7 @@ class My_App(QtWidgets.QMainWindow):
 			flann = cv2.FlannBasedMatcher(index_params, search_params)
 			matches = flann.knnMatch(desc_img, desc_grayframe, k=2)
 
+			# Keep track of the keypoints that are good enough
 			good_kp = []
 			for m, n in matches:
 				if m.distance < 0.6*n.distance:
@@ -89,13 +91,15 @@ class My_App(QtWidgets.QMainWindow):
 
 				matrix, mask = cv2.findHomography(query_kp, train_kp, cv2.RANSAC, 5.0)
 
-				# Perspective transform
+				# Perspective transform matrix
 				height, width = img.shape
 				pts = np.float32([[0, 0], [0, height], [width, height], [width, 0]]).reshape(-1, 1, 2)
 				dst = cv2.perspectiveTransform(pts, matrix)
 
+				# Draw homography
 				frame = cv2.polylines(frame, [np.int32(dst)], True, (255, 0, 0), 3)
 			else:
+				# Draw matching keypoints
 				frame = cv2.drawMatches(raw, kp_img, frame, kp_grayframe, good_kp, grayframe)
 
 		pixmap = self.convert_cv_to_pixmap(frame)
